@@ -110,6 +110,10 @@ h1{font:300 28px/1.05 'Unbounded',sans-serif;letter-spacing:-.02em}
 .amt{flex:1;min-width:0;text-align:center;font:300 clamp(36px,12vw,50px)/1.05 'Unbounded',sans-serif;
   letter-spacing:-.04em;white-space:nowrap;color:var(--midnight)}
 .amt span{font-size:.42em;margin-left:.2em;color:rgba(4,30,66,.45);letter-spacing:0}
+.amt{cursor:text}
+.amt-input{flex:1;min-width:0;text-align:center;font:300 clamp(36px,12vw,50px)/1.05 'Unbounded',sans-serif;letter-spacing:-.04em;
+  color:var(--midnight);background:rgba(4,30,66,.06);border:1px solid rgba(4,30,66,.28);border-radius:10px;padding:2px 8px}
+.amt-hint{text-align:center;font-size:11px;color:rgba(4,30,66,.5);margin:-2px 0 2px}
 .nudge{flex:0 0 auto;width:42px;height:42px;border-radius:50%;cursor:pointer;background:rgba(4,30,66,.07);
   border:1px solid rgba(4,30,66,.16);color:var(--midnight);font:300 24px/1 'Onest',sans-serif;display:grid;place-items:center}
 .nudge:active{background:rgba(4,30,66,.16)}
@@ -339,14 +343,17 @@ button:focus-visible,summary:focus-visible,input:focus-visible,.range:focus-visi
         <input type="date" id="datePick" aria-label="Выбрать другую дату">
       </label>
     </div>
+    <div id="daysBack"></div>
   </section>
 
   <section class="card paper">
     <div class="amt-row">
       <button class="nudge" data-act="nudge" data-v="-1" aria-label="Чуть меньше">−</button>
-      <div class="amt" id="amt" aria-live="polite">0<span>₽</span></div>
+      <div class="amt" id="amt" role="button" tabindex="0" aria-live="polite" aria-label="Сумма. Нажми, чтобы ввести точную">0<span>₽</span></div>
+      <input id="amtInput" class="amt-input" type="text" inputmode="numeric" autocomplete="off" aria-label="Точная сумма в рублях" hidden>
       <button class="nudge" data-act="nudge" data-v="1" aria-label="Чуть больше">+</button>
     </div>
+    <div id="amtHint" class="amt-hint">нажми на сумму, чтобы ввести точно</div>
     <div class="ink" id="inkAmt">
       <div class="rail"></div>
       <div class="ink-fx" aria-hidden="true"><i class="fill"></i><i class="blob b3"></i><i class="blob b2"></i><i class="blob b1"></i></div>
@@ -543,7 +550,7 @@ const S={
   tx:[],cfg:normCfg(),byMC:new Map(),
   form:{date:iso(today),amt:0,tab:'base',cat:null,imp:3,tag:'',shop:'',why:[]},
   extraShops:[],extraWhys:[],
-  sm:iso(today).slice(0,7),sb:'all',sc:'',sd:'',stag:'',
+  winEnd:iso(today),sm:iso(today).slice(0,7),sb:'all',sc:'',sd:'',stag:'',
   draft:null,entry:null,delAsk:false,lastId:null
 };
 const catById=id=>S.cfg.cats.find(c=>c.id===id);
@@ -837,15 +844,23 @@ function renderBuckets(){
     return `<div class="bk" style="--c:var(${B.color})"><b>${B.name}</b><div class="v ${over?'neg':''}">${main}</div><span class="meter ${over?'over':''}"><i class="ms" style="width:${pct}%"></i></span><small>${cap}</small></div>`;
   }).join('');
 }
+function fitWindow(){
+  // окно из 6 дней: по умолчанию кончается сегодня; если выбрана более ранняя дата, строим окно вокруг неё
+  const sel=parseIso(S.form.date),defStart=new Date(today);defStart.setDate(today.getDate()-5);
+  if(sel>=defStart){S.winEnd=iso(today);return}
+  const end=new Date(sel);end.setDate(sel.getDate()+2);
+  S.winEnd=iso(end>today?today:end);
+}
 function renderDays(){
-  const list=[];
-  for(let i=5;i>=0;i--){const d=new Date(today);d.setDate(today.getDate()-i);list.push(iso(d))}
-  if(!list.includes(S.form.date)){list.shift();list.unshift(S.form.date)}
+  const end=parseIso(S.winEnd),list=[];
+  for(let i=5;i>=0;i--){const d=new Date(end);d.setDate(end.getDate()-i);list.push(iso(d))}
+  if(!list.includes(S.form.date)){fitWindow();return renderDays()}
   const has=new Set(S.tx.map(t=>t.d));
   $('#days').innerHTML=list.map(k=>{
     const d=parseIso(k),isT=k===iso(today);
     return `<button class="day${has.has(k)?' has':''}" data-act="pickDay" data-v="${k}" aria-pressed="${k===S.form.date}" aria-label="${d.toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}"><small>${isT?'сегодня':WD[d.getDay()]}</small><b>${d.getDate()}</b></button>`;
   }).join('');
+  $('#daysBack').innerHTML=S.winEnd!==iso(today)?'<div style="padding:0 8px 8px"><button class="chip ghost" data-act="toToday">Вернуться к сегодня</button></div>':'';
 }
 function renderTabs(){
   $('#tabs').innerHTML=['base','ukrep','save','noo'].map(id=>`<button class="tab" role="tab" aria-selected="${S.form.tab===id}" data-act="tab" data-v="${id}" style="--tc:var(${BUCKET[id].color})"><i></i>${BUCKET[id].name}</button>`).join('');
@@ -943,6 +958,7 @@ const hintCount=()=>{try{return +localStorage.getItem('bk_saves')||0}catch(e){re
 const bumpHint=()=>{try{localStorage.setItem('bk_saves',String(hintCount()+1))}catch(e){}};
 function renderSave(){
   const f=S.form,c=catById(f.cat),dz=$('#dz');
+  const hh=$('#amtHint');if(hh)hh.style.visibility=f.amt>0?'hidden':'visible';
   const prog=(f.amt>0?.5:0)+(c?.5:0);
   dz.style.setProperty('--ink',prog>=1?'#FFFFFF':prog>0?'#C3D2F7':'#8FA9F0');
   dz.classList.toggle('ready',prog>=1);
@@ -966,6 +982,17 @@ function syncImp(){
   $('#impBadge').style.background=IMPC[v];
   $('#impVal').textContent=v;$('#impLabel').textContent=IMP[v];
   $('#impRange').setAttribute('aria-valuetext',v+', '+IMP[v]);
+}
+let editingAmt=false;
+function startAmtEdit(){
+  const i=$('#amtInput'),d=$('#amt');editingAmt=true;
+  i.value=S.form.amt||'';d.hidden=true;i.hidden=false;i.focus();i.select();
+}
+function endAmtEdit(apply){
+  if(!editingAmt)return;editingAmt=false;
+  const i=$('#amtInput'),d=$('#amt');
+  if(apply){const v=parseInt(String(i.value).replace(/[^\d]/g,''),10);if(isFinite(v)&&v>=0)setAmt(Math.min(v,10000000),true)}
+  i.hidden=true;d.hidden=false;
 }
 let raf=0;
 function queueAmt(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;renderAmountOnly()})}
@@ -1020,6 +1047,7 @@ document.addEventListener('click',e=>{
   const a=t.dataset.act,v=t.dataset.v,f=S.form;
   switch(a){
     case 'pickDay':f.date=v;renderAll();break;
+    case 'toToday':f.date=iso(today);S.winEnd=iso(today);renderAll();break;
     case 'nudge':{const d=+v;const st=stepFor(d>0?f.amt:Math.max(0,f.amt-1));setAmt(f.amt+d*st,true);break}
     case 'tab':f.tab=v;if(f.cat){const c=catById(f.cat);if(c&&c.b!==v)f.cat=null}renderTabs();renderCats();renderWhy();renderSave();applyAccent();break;
     case 'pickCat':{
@@ -1068,6 +1096,10 @@ document.addEventListener('click',e=>{
     case 'setShopAdd':{const i=$('#setShopInput'),s=i.value.trim();if(s&&!S.draft.shops.some(x=>x.toLowerCase()===s.toLowerCase())){S.draft.shops.push(s);renderSettingsShops()}i.value='';break}
   }
 });
+$('#amt').addEventListener('click',startAmtEdit);
+$('#amt').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();startAmtEdit()}});
+$('#amtInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();endAmtEdit(true)}else if(e.key==='Escape'){endAmtEdit(false)}});
+$('#amtInput').addEventListener('blur',()=>endAmtEdit(true));
 $('#amtRange').addEventListener('input',e=>{
   const i=+e.target.value;S.form.amt=STOPS[i];
   $('#inkAmt').style.setProperty('--pn',i/MAXI);queueAmt();
@@ -1075,7 +1107,7 @@ $('#amtRange').addEventListener('input',e=>{
 $('#impRange').addEventListener('input',e=>{S.form.imp=+e.target.value;syncImp()});
 $('#tag').addEventListener('input',e=>{S.form.tag=e.target.value;renderTagChips();renderTagInfo();renderShops()});
 $('#datePick').max=iso(today);
-$('#datePick').addEventListener('change',e=>{if(e.target.value){S.form.date=e.target.value;renderAll()}e.target.value=''});
+$('#datePick').addEventListener('change',e=>{if(e.target.value){S.form.date=e.target.value;fitWindow();renderAll()}e.target.value=''});
 $('#authPass').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();authGo()}});
 $('#authEmail').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#authPass').focus()}});
 $('#shopInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.querySelector('[data-act=shopAdd]').click()}});
