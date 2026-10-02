@@ -24,7 +24,7 @@
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
-html{touch-action:manipulation;scroll-padding-top:env(safe-area-inset-top,0px);background:var(--midnight)}
+html{overflow-x:hidden;touch-action:manipulation;scroll-padding-top:env(safe-area-inset-top,0px);background:var(--midnight)}
 body{margin:0;min-height:100%;background:transparent;color:var(--text);
   font:15px/1.4 'Onest',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   -webkit-font-smoothing:antialiased;overflow-x:hidden}
@@ -33,15 +33,15 @@ button{font:inherit;color:inherit}
 h1,h2{margin:0;font-weight:400}
 
 /* дымное стекло: синие слои палитры, лиловый дым, оранжевое «солнце» */
-.bg{position:fixed;inset:0;z-index:-1;background:
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:
   radial-gradient(70% 42% at 8% 3%,rgba(28,96,255,.9),transparent 70%),
   radial-gradient(60% 46% at 98% 28%,rgba(30,34,170,.95),transparent 72%),
   radial-gradient(60% 38% at 4% 78%,rgba(214,191,221,.3),transparent 72%),
   linear-gradient(180deg,#0A2A80 0%,#0A2070 38%,#041E42 100%)}
 .bg::after{content:"";position:absolute;inset:0;opacity:.4;background-size:900px 900px;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.005 .01' numOctaves='3' seed='23'/%3E%3CfeColorMatrix values='0 0 0 0 .9 0 0 0 0 .84 0 0 0 0 .97 0 0 0 1.2 -.46'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-.sun{position:fixed;z-index:-1;right:-150px;top:42%;width:380px;height:380px;border-radius:50%;pointer-events:none;
-  background:radial-gradient(circle at 42% 40%,rgba(255,217,160,.95) 0%,rgba(239,190,125,.8) 30%,rgba(240,138,60,.55) 55%,rgba(240,138,60,0) 72%);opacity:.6}
+.sun{position:absolute;right:-150px;top:42%;width:380px;height:380px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at 42% 40%,rgba(255,226,176,.95) 0%,rgba(250,190,120,.8) 32%,rgba(240,138,60,.5) 58%,rgba(240,138,60,0) 74%);mix-blend-mode:screen;opacity:.55}
 
 #app{max-width:520px;margin:0 auto;padding:8px 12px 104px}
 #app[data-b=base]{--acc:var(--c-base);--accg:rgba(228,237,255,.45)}
@@ -51,7 +51,8 @@ h1,h2{margin:0;font-weight:400}
 
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
 h1{font:300 28px/1.05 'Unbounded',sans-serif;letter-spacing:-.02em}
-.top p{margin:3px 0 0;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.top>div:first-child{min-width:0;flex:1}
+.top p{margin:3px 0 0;font-size:12.5px;color:var(--muted);white-space:normal;overflow-wrap:anywhere}
 .top p::first-letter{text-transform:uppercase}
 .top-actions{display:flex;gap:8px;flex:0 0 auto}
 .ico{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;cursor:pointer;
@@ -245,9 +246,9 @@ details.more[open] summary{margin-bottom:10px}
 
 
 .toast{position:fixed;left:50%;transform:translate(-50%,20px);bottom:calc(88px + env(safe-area-inset-bottom,0px));z-index:70;
-  opacity:0;pointer-events:none;display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:16px;font-size:14px;
+  opacity:0;pointer-events:none;display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:12px;font-size:14px;max-width:calc(100vw - 24px);width:max-content;
   background:rgba(8,30,110,.88);border:1px solid var(--edge);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  transition:opacity .2s,transform .2s;white-space:nowrap}
+  transition:opacity .2s,transform .2s;white-space:normal}
 .toast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .toast button{background:none;border:0;color:var(--aurora);font-weight:700;cursor:pointer;padding:0}
 
@@ -302,7 +303,10 @@ details.more[open] summary{margin-bottom:10px}
 .set-grp h3{font:400 12.5px 'Unbounded',sans-serif;color:var(--muted);margin:14px 0 8px}
 .set-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .set-row label{flex:1;font-size:14px;min-width:0}
-.set-row input{width:118px;text-align:right;padding:10px 12px;font-size:15px}
+.set-row input{width:110px;text-align:right;padding:10px 12px;font-size:16px}
+.set-row input.set-name{flex:1;width:auto;min-width:0;text-align:left}
+.xbtn{flex:0 0 36px;height:36px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid var(--edge);cursor:pointer;font-size:13px}
+.set-grp .chip{margin:2px 0 6px}
 .totals{padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.1);border:1px solid var(--edge);font-size:13.5px;line-height:1.7}
 .totals .neg{color:var(--warn);font-weight:600}
 .btn{display:block;width:100%;padding:15px;border-radius:99px;border:0;background:#fff;color:var(--midnight);
@@ -318,8 +322,7 @@ button:focus-visible,summary:focus-visible,input:focus-visible,.range:focus-visi
 </style>
 </head>
 <body>
-<div class="bg" aria-hidden="true"></div>
-<div class="sun" aria-hidden="true"></div>
+<div class="bg" aria-hidden="true"><div class="sun"></div></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
   <filter id="goo" x="-10%" y="-90%" width="120%" height="280%" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b"/><feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -8"/></filter>
   <filter id="goo2" x="-15%" y="-45%" width="130%" height="190%" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="6" result="b"/><feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9"/></filter>
@@ -388,12 +391,10 @@ button:focus-visible,summary:focus-visible,input:focus-visible,.range:focus-visi
       <div class="lbl">Что купила</div>
       <input id="tag" class="field" type="text" placeholder="напр. творожок" autocomplete="off" maxlength="40" aria-label="Тег покупки">
       <div id="tagChips" class="chips"></div>
-      <details class="more" id="cMore">
-        <summary>Упаковка, заметка</summary>
-        <input id="pack" class="field" type="text" placeholder="180 г, 0,5 л, 6 шт" maxlength="20" aria-label="Размер упаковки">
-        <input id="note" class="field" type="text" placeholder="Заметка" maxlength="120" aria-label="Заметка">
-        <p class="muted" style="margin:8px 0 0;font-size:12px">Упаковка нужна для сравнения цены за 100 г, литр или штуку.</p>
-      </details>
+      <div id="cMore" style="margin-top:8px">
+        <input id="pack" class="field" type="text" placeholder="упаковка: 180 г" maxlength="20" aria-label="Размер упаковки">
+        <input id="note" class="field" type="text" placeholder="заметка" maxlength="120" aria-label="Заметка">
+      </div>
     </section>
     <section class="card">
       <div class="lbl">Где купила</div>
@@ -527,6 +528,14 @@ const DEFAULT_CFG={
     {id:'noo',name:'НОО',b:'noo',plan:0,hint:'неопознанный оплаченный объект: заплатила и не поняла за что'}
   ]
 };
+function normMonth(d,base){
+  base=base||{income:DEFAULT_CFG.income,cats:DEFAULT_CFG.cats};
+  const o={income:(d&&d.income!=null&&isFinite(Number(d.income)))?Number(d.income):base.income,
+           cats:clone((d&&Array.isArray(d.cats)&&d.cats.length)?d.cats:base.cats)};
+  o.cats=o.cats.map(c=>Object.assign({},c,{plan:Math.max(0,Number(c.plan)||0)}));
+  if(!o.cats.some(x=>x.id==='noo'))o.cats.push(clone(DEFAULT_CFG.cats[DEFAULT_CFG.cats.length-1]));
+  return o;
+}
 function normCfg(c){
   const o=Object.assign(clone(DEFAULT_CFG),c||{});
   if(!c||(c.v||1)<2){
@@ -554,18 +563,36 @@ const stepFor=v=>v<300?1:v<3000?10:v<30000?100:500;
 
 const today=new Date();
 const S={
-  tx:[],cfg:normCfg(),byMC:new Map(),
+  tx:[],cfg:normCfg(),months:{},byMC:new Map(),
   form:{date:iso(today),amt:0,tab:'base',cat:null,imp:3,tag:'',shop:'',why:[]},
   extraShops:[],extraWhys:[],
   winEnd:iso(today),sm:iso(today).slice(0,7),sb:'all',sc:'',sd:'',stag:'',
   draft:null,entry:null,delAsk:false,lastId:null
 };
-const catById=id=>S.cfg.cats.find(c=>c.id===id);
-const bucketOfTx=t=>{const c=catById(t.c);return c?c.b:(t.b||'base')};
-const catNameOfTx=t=>{const c=catById(t.c);return c?c.name:(t.cn||t.c)};
+/* Категории и суммы живут по месяцам. Месяц без своих настроек повторяет ближайший прошлый настроенный. */
+function cfgMonth(mon){
+  if(S.months[mon])return S.months[mon];
+  const keys=Object.keys(S.months).filter(k=>k<mon).sort();
+  if(keys.length)return S.months[keys[keys.length-1]];
+  return {income:S.cfg.income,cats:S.cfg.cats};
+}
+const monthCats=mon=>cfgMonth(mon).cats;
+/* для записей: ищет категорию в её месяце, а если её там убрали, в других месяцах */
+function catById(id,mon){
+  if(!id)return undefined;
+  const c=monthCats(mon||monthOf(S.form.date)).find(x=>x.id===id);
+  if(c)return c;
+  for(const k of Object.keys(S.months).sort().reverse()){const x=S.months[k].cats.find(z=>z.id===id);if(x)return x}
+  return S.cfg.cats.find(x=>x.id===id);
+}
+/* для формы: только категории месяца выбранной даты */
+const fcat=()=>S.form.cat?monthCats(monthOf(S.form.date)).find(x=>x.id===S.form.cat):undefined;
+const shiftMon=(m,d)=>{const x=new Date(+m.slice(0,4),+m.slice(5,7)-1+d,1);return x.getFullYear()+'-'+pad(x.getMonth()+1)};
+const bucketOfTx=t=>{const c=catById(t.c,monthOf(t.d));return c?c.b:(t.b||'base')};
+const catNameOfTx=t=>{const c=catById(t.c,monthOf(t.d));return c?c.name:(t.cn||t.c)};
 
 /* ---------- база: Supabase, вход по почте и паролю ---------- */
-const APP_VERSION='8 · 02.10.2026';
+const APP_VERSION='9 · 02.10.2026';
 const SB_URL='https://yshpuzygxjzoafjjzfox.supabase.co';
 const SB_KEY='sb_publishable_WUWAzb6hHO1G_DY9m34JtA_PBviHBY4';
 const Store={mode:'wait',ready:null,resolve:null};
@@ -573,8 +600,8 @@ let SESSION=null,lastSig='';
 
 function loadSession(){try{const x=JSON.parse(localStorage.getItem('bk_sb')||'null');if(x&&x.refresh_token)return x}catch(e){}return null}
 function saveSession(x){SESSION=x;try{if(x)localStorage.setItem('bk_sb',JSON.stringify(x));else localStorage.removeItem('bk_sb')}catch(e){}}
-function cacheSave(){try{localStorage.setItem('bk_cache',JSON.stringify({tx:S.tx,cfg:S.cfg}))}catch(e){}}
-function cacheLoad(){try{const c=JSON.parse(localStorage.getItem('bk_cache')||'null');if(c&&Array.isArray(c.tx)){S.tx=c.tx;if(c.cfg&&c.cfg.cats)S.cfg=normCfg(c.cfg);return true}}catch(e){}return false}
+function cacheSave(){try{localStorage.setItem('bk_cache',JSON.stringify({tx:S.tx,cfg:S.cfg,months:S.months}))}catch(e){}}
+function cacheLoad(){try{const c=JSON.parse(localStorage.getItem('bk_cache')||'null');if(c&&Array.isArray(c.tx)){S.tx=c.tx;if(c.cfg&&c.cfg.cats)S.cfg=normCfg(c.cfg);S.months={};for(const k in (c.months||{}))S.months[k]=normMonth(c.months[k],{income:S.cfg.income,cats:S.cfg.cats});return true}}catch(e){}return false}
 
 function fetchT(url,opts){
   const c=new AbortController(),t=setTimeout(()=>c.abort(),20000);
@@ -627,16 +654,18 @@ async function syncAll(first){
   syncing=true;
   try{
     if(QUEUE.length)await flushQueue();
-    const res=await Promise.all([fetchAllTx(),sb('GET','/config?id=eq.main&select=data')]);
+    const res=await Promise.all([fetchAllTx(),sb('GET','/config?select=id,data')]);
     const rows=applyQueue(res[0].map(r=>Object.assign(r,{a:Number(r.a),w:r.w||[]}))),cfgRows=res[1];
-    let cfgData=cfgRows&&cfgRows.length?cfgRows[0].data:null;
-    if(QUEUE.some(o=>o.k==='cfg'))cfgData=null;
-    const sig=JSON.stringify(rows)+JSON.stringify(cfgData);
+    let main=null;const months={};
+    for(const r of (cfgRows||[])){if(r.id==='main')main=r.data;else if(String(r.id).indexOf('m:')===0)months[r.id.slice(2)]=r.data}
+    for(const op of QUEUE){if(op.k==='cfg'){if(!op.id||op.id==='main')main=op.data;else months[op.id.slice(2)]=op.data}}
+    const sig=JSON.stringify(rows)+JSON.stringify(main)+JSON.stringify(months);
     const wasMode=Store.mode;
     Store.mode='cloud';
     if(sig!==lastSig||wasMode!=='cloud'){
       lastSig=sig;S.tx=rows;
-      if(cfgData&&cfgData.cats)S.cfg=normCfg(cfgData);
+      if(main&&main.cats)S.cfg=normCfg(main);
+      S.months={};for(const k in months)S.months[k]=normMonth(months[k],{income:S.cfg.income,cats:S.cfg.cats});
       cacheSave();afterData();
     }
   }catch(e){
@@ -659,7 +688,7 @@ function initStore(){
   startSession();
 }
 function signOut(silent){
-  saveSession(null);lastSig='';S.tx=[];QUEUE=[];saveQueue();
+  saveSession(null);lastSig='';S.tx=[];S.months={};QUEUE=[];saveQueue();
   try{localStorage.removeItem('bk_cache')}catch(e){}
   Store.mode='wait';
   ['settings','stats','entry'].forEach(id=>{$('#'+id).hidden=true});
@@ -674,7 +703,7 @@ function sendOp(op){
   if(op.k==='ins'){const r=op.row;return sb('POST','/tx?on_conflict=id',{id:r.id,d:r.d,a:r.a,c:r.c,cn:r.cn,b:r.b,i:r.i,g:r.g,s:r.s,w:r.w,p:r.p,n:r.n,ts:r.ts},{Prefer:'resolution=ignore-duplicates,return=minimal'})}
   if(op.k==='upd')return sb('PATCH','/tx?id=eq.'+encodeURIComponent(op.id),op.patch,{Prefer:'return=minimal'});
   if(op.k==='del')return sb('DELETE','/tx?id=eq.'+encodeURIComponent(op.id),null,{Prefer:'return=minimal'});
-  if(op.k==='cfg')return sb('POST','/config?on_conflict=user_id,id',{id:'main',data:op.data},{Prefer:'resolution=merge-duplicates,return=minimal'});
+  if(op.k==='cfg')return sb('POST','/config?on_conflict=user_id,id',{id:op.id||'main',data:op.data},{Prefer:'resolution=merge-duplicates,return=minimal'});
   return Promise.resolve();
 }
 async function flushQueue(){
@@ -707,7 +736,8 @@ function applyQueue(rows){
 async function txSet(t){S.tx.push(t);cacheSave();afterData();enqueue({k:'ins',row:t})}
 async function txUpdate(id,patch){const t=S.tx.find(x=>x.id===id);if(t)Object.assign(t,patch);cacheSave();afterData();enqueue({k:'upd',id:id,patch:patch})}
 async function txDelete(id){S.tx=S.tx.filter(x=>x.id!==id);cacheSave();afterData();enqueue({k:'del',id:id})}
-async function cfgSave(cfg){S.cfg=normCfg(cfg);cacheSave();afterData();enqueue({k:'cfg',data:cfg})}
+async function saveMonthCfg(mon,data){S.months[mon]=normMonth(data,{income:S.cfg.income,cats:S.cfg.cats});cacheSave();afterData();enqueue({k:'cfg',id:'m:'+mon,data:S.months[mon]})}
+async function saveMainCfg(){cacheSave();afterData();enqueue({k:'cfg',id:'main',data:S.cfg})}
 
 /* ---------- вход ---------- */
 let authMode='in';
@@ -760,7 +790,8 @@ async function importBlock(text){
   const keys=new Set(S.tx.map(t=>[t.d,Math.round(t.a),(t.g||'').toLowerCase(),(t.s||'').toLowerCase()].join('|')));
   let added=0,dup=0,bad=0;
   for(const x of arr){
-    const c=S.cfg.cats.find(k=>k.id===x.c)||S.cfg.cats.find(k=>k.name.toLowerCase()===String(x.c||x.cn||'').toLowerCase());
+    const okD=/^\d{4}-\d{2}-\d{2}$/.test(String(x.d)),cs=okD?monthCats(String(x.d).slice(0,7)):[];
+    const c=cs.find(k=>k.id===x.c)||cs.find(k=>k.name.toLowerCase()===String(x.c||x.cn||'').toLowerCase());
     const a=Math.round(Number(x.a));
     if(!c||!(a>0)||!/^\d{4}-\d{2}-\d{2}$/.test(String(x.d))){bad++;continue}
     const g=String(x.g||'').trim(),s=String(x.s||'').trim();
@@ -790,9 +821,10 @@ function catState(c,mon){
   if(c.carry&&mon>=S.cfg.start){
     const ms=monthsRange(S.cfg.start,mon);let carry=0;
     for(let i=0;i<ms.length;i++){
-      const av=c.plan+carry;
+      const cc=i===ms.length-1?c:monthCats(ms[i]).find(x=>x.id===c.id);
+      const plan=cc?cc.plan:0,av=plan+carry;
       if(i===ms.length-1){avail=av;break}
-      carry=Math.min(av-spentIn(c.id,ms[i]),(c.cap==null?Infinity:c.cap)-c.plan);
+      carry=Math.min(av-spentIn(c.id,ms[i]),(c.cap==null?Infinity:c.cap)-plan);
     }
   }
   const sp=spentIn(c.id,mon);
@@ -800,7 +832,7 @@ function catState(c,mon){
 }
 function bucketState(id,mon){
   let a=0,s=0;
-  for(const c of S.cfg.cats)if(c.b===id){const x=catState(c,mon);a+=x.avail;s+=x.spent}
+  for(const c of monthCats(mon))if(c.b===id){const x=catState(c,mon);a+=x.avail;s+=x.spent}
   return {avail:a,spent:s,left:a-s};
 }
 function weekRange(dIso){
@@ -866,7 +898,7 @@ function renderAll(){
   renderTagChips();renderTagInfo();renderShops();renderWhy();renderEntries();renderSave();applyAccent();
 }
 function applyAccent(){
-  const c=catById(S.form.cat);
+  const c=fcat();
   const b=c?c.b:S.form.tab;
   $('#app').dataset.b=b;
 }
@@ -875,7 +907,7 @@ function renderHeader(){
   $('#monTitle').textContent=MONTHS[d.getMonth()];
   let s=d.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
   if(Store.mode==='wait')s+=' · синхронизация…';
-  if(Store.mode==='offline')s+=' · нет связи, показываю сохранённое';
+  if(Store.mode==='offline')s+=' · нет связи';
   if(QUEUE.length)s+=' · отправляю: '+QUEUE.length;
   $('#monSub').textContent=s;
 }
@@ -922,12 +954,13 @@ function renderTabs(){
 }
 function renderCats(){
   const f=S.form;
-  $('#cats').innerHTML=S.cfg.cats.filter(c=>c.b===f.tab).map(c=>
+  if(f.cat&&!fcat())f.cat=null;
+  $('#cats').innerHTML=monthCats(monthOf(f.date)).filter(c=>c.b===f.tab).map(c=>
     `<button class="tile" data-act="pickCat" data-v="${c.id}" aria-pressed="${f.cat===c.id}"><span class="n">${esc(c.name)}</span></button>`).join('');
   renderCatDetail();
 }
 function renderCatDetail(){
-  const f=S.form,c=catById(f.cat),el=$('#catDetail');
+  const f=S.form,c=fcat(),el=$('#catDetail');
   if(!c){el.classList.remove('on');el.setAttribute('aria-hidden','true');return}
   el.classList.add('on');el.setAttribute('aria-hidden','false');
   const mon=monthOf(f.date),st=catState(c,mon),pend=f.amt;
@@ -991,7 +1024,7 @@ function allWhys(){
   return [...set];
 }
 function renderWhy(){
-  const c=catById(S.form.cat),wrap=$('#whyWrap');
+  const c=fcat(),wrap=$('#whyWrap');
   wrap.hidden=!(c&&c.why);
   if(wrap.hidden)return;
   $('#whyChips').innerHTML=allWhys().map(w=>`<button class="chip" data-act="pickWhy" data-v="${esc(w)}" aria-pressed="${S.form.why.includes(w)}">${esc(w)}</button>`).join('')+'<button class="chip ghost" data-act="whyToggle">+ свой</button>';
@@ -1008,11 +1041,11 @@ function renderEntries(){
     return `<button class="entry" data-act="openEntry" data-v="${t.id}"><div class="e-main"><div class="e-t">${b==='noo'?'<span class="noo-flag">НОО</span> ':''}${esc(t.g||catNameOfTx(t))}<span class="dots" aria-label="важность ${t.i}">${dots}</span></div><div class="e-s">${sub}</div></div><div class="e-a">${rub(t.a)}</div></button>`;
   }).join(''):'<p class="empty">В этот день записей пока нет.</p>';
 }
-const isReady=()=>S.form.amt>0&&!!catById(S.form.cat);
+const isReady=()=>S.form.amt>0&&!!fcat();
 const hintCount=()=>{try{return +localStorage.getItem('bk_saves')||0}catch(e){return 0}};
 const bumpHint=()=>{try{localStorage.setItem('bk_saves',String(hintCount()+1))}catch(e){}};
 function renderSave(){
-  const f=S.form,c=catById(f.cat),dz=$('#dz');
+  const f=S.form,c=fcat(),dz=$('#dz');
   const hh=$('#amtHint');if(hh)hh.style.visibility=f.amt>0?'hidden':'visible';
   const prog=(f.amt>0?.5:0)+(c?.5:0);
   dz.style.setProperty('--ink',prog>=1?'#FFFFFF':prog>0?'#C3D2F7':'#8FA9F0');
@@ -1059,7 +1092,7 @@ function setAmt(v,sync){
   renderAmountOnly();
 }
 async function save(){
-  const f=S.form,c=catById(f.cat);
+  const f=S.form,c=fcat();
   if(!c||f.amt<=0)return false;
   const typed=$('#tag').value.trim();
   const known=tagStats().find(s=>s.key===typed.toLowerCase());
@@ -1103,9 +1136,9 @@ document.addEventListener('click',e=>{
     case 'pickDay':f.date=v;renderAll();break;
     case 'toToday':f.date=iso(today);S.scrollSel=true;renderAll();break;
     case 'nudge':{const d=+v;const st=stepFor(d>0?f.amt:Math.max(0,f.amt-1));setAmt(f.amt+d*st,true);break}
-    case 'tab':f.tab=v;if(f.cat){const c=catById(f.cat);if(c&&c.b!==v)f.cat=null}renderTabs();renderCats();renderWhy();renderSave();applyAccent();break;
+    case 'tab':f.tab=v;if(f.cat){const c=fcat();if(c&&c.b!==v)f.cat=null}renderTabs();renderCats();renderWhy();renderSave();applyAccent();break;
     case 'pickCat':{
-      f.cat=f.cat===v?null:v;const c=catById(f.cat);
+      f.cat=f.cat===v?null:v;const c=fcat();
       if(c){f.tab=c.b;if(!c.why)f.why=[]}
       renderTabs();renderCats();renderTagChips();renderWhy();renderSave();applyAccent();break}
     case 'pickTag':$('#tag').value=v;f.tag=v;renderTagChips();renderTagInfo();renderShops();break;
@@ -1123,7 +1156,23 @@ document.addEventListener('click',e=>{
     case 'undo':if(S.lastId){txDelete(S.lastId).catch(console.error);S.lastId=null;$('#toast').classList.remove('on')}break;
     case 'openStats':S.sm=monthOf(f.date);renderStats();openSheet('stats');break;
     case 'closeStats':closeSheet('stats');break;
-    case 'openSettings':S.draft=clone(S.cfg);renderSettings();openSheet('settings');break;
+    case 'openSettings':draftFromMonth(monthOf(f.date));renderSettings();openSheet('settings');break;
+    case 'setMon':{
+      const nm=shiftMon(S.draft.mon,+v),lim=shiftMon(iso(today).slice(0,7),12);
+      if(nm<S.cfg.start||nm>lim)break;
+      if(S.draft.dirty&&!confirm('Изменения не сохранены. Перейти без сохранения?'))break;
+      const keepShops=S.draft.shops;draftFromMonth(nm);S.draft.shops=keepShops;renderSettings();break}
+    case 'setCopyPrev':{
+      const c=cfgMonth(shiftMon(S.draft.mon,-1));
+      S.draft.income=c.income;S.draft.cats=clone(c.cats);S.draft.dirty=true;renderSettings();break}
+    case 'catAdd':{
+      const id='c'+uid();S.draft.cats.push({id:id,name:'Новая категория',b:v,plan:0});S.draft.dirty=true;renderSettings();
+      const inp=document.querySelector('.set-name[data-cid="'+id+'"]');if(inp){inp.focus();inp.select()}break}
+    case 'catDel':{
+      const c=S.draft.cats.find(x=>x.id===v);if(!c||c.id==='noo')break;
+      const n=S.tx.filter(x=>monthOf(x.d)===S.draft.mon&&x.c===v).length;
+      if(n&&!confirm('В этом месяце по категории «'+c.name+'» есть траты ('+n+'). Они останутся, но категория пропадёт из списка. Убрать?'))break;
+      S.draft.cats=S.draft.cats.filter(x=>x.id!==v);S.draft.dirty=true;renderSettings();break}
     case 'closeSettings':closeSheet('settings');break;
     case 'saveSettings':saveSettings();break;
     case 'openEntry':S.entry=v;S.delAsk=false;renderEntry();openSheet('entry');break;
@@ -1157,6 +1206,14 @@ document.addEventListener('click',e=>{
   window.addEventListener('pointerup',()=>{down=false});
   box.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false}},true);
 })();
+$('#settingsBody').addEventListener('input',e=>{
+  const t=e.target;
+  if(t.id==='setIncome'){S.draft.income=Math.max(0,+t.value||0)}
+  else if(t.classList.contains('set-plan')){const c=S.draft.cats.find(x=>x.id===t.dataset.cid);if(c)c.plan=Math.max(0,+t.value||0)}
+  else if(t.classList.contains('set-name')){const c=S.draft.cats.find(x=>x.id===t.dataset.cid);if(c)c.name=t.value}
+  else return;
+  S.draft.dirty=true;updateTotals();
+});
 $('#amt').addEventListener('click',startAmtEdit);
 $('#amt').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();startAmtEdit()}});
 $('#amtInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();endAmtEdit(true)}else if(e.key==='Escape'){endAmtEdit(false)}});
@@ -1189,7 +1246,7 @@ function dzSet(d){
   dz.style.setProperty('--h',Math.max(9,56-DZ.d*.3)+'px');
 }
 function notReady(){
-  const f=S.form,c=catById(f.cat),dz=$('#dz');
+  const f=S.form,c=fcat(),dz=$('#dz');
   toast('Сначала выбери '+(c?'сумму':f.amt>0?'категорию':'сумму и категорию'));$('#toast').dataset.nr='1';
   dz.classList.remove('shake');void dz.offsetWidth;dz.classList.add('shake');
 }
@@ -1261,14 +1318,15 @@ function renderEntry(){
   h+=`<p class="muted" style="margin:6px 0 0;font-size:13px">Важность: ${t.i} (${IMP[t.i]||''})${t.n?'<br>Заметка: '+esc(t.n):''}</p>`;
   h+=`<h2 class="t" style="margin:16px 0 0">Сменить категорию</h2>`;
   for(const bid of ['base','ukrep','save','noo']){
-    const cs=S.cfg.cats.filter(c=>c.b===bid);
+    const cs=monthCats(monthOf(t.d)).filter(c=>c.b===bid);
     h+=`<div class="chips">${cs.map(c=>`<button class="chip" data-act="reassign" data-v="${c.id}" aria-pressed="${c.id===t.c}">${esc(c.name)}${c.name==='Другое'?'<small>'+BUCKET[bid].name+'</small>':''}</button>`).join('')}</div>`;
   }
   h+=`<button class="btn danger" data-act="delAsk">${S.delAsk?'Точно удалить':'Удалить запись'}</button><button class="btn ghost" data-act="closeEntry">Закрыть</button>`;
   $('#entryBody').innerHTML=h;
 }
 async function reassign(cid){
-  const t=S.tx.find(x=>x.id===S.entry),c=catById(cid);if(!t||!c)return;
+  const t=S.tx.find(x=>x.id===S.entry);if(!t)return;
+  const c=monthCats(monthOf(t.d)).find(x=>x.id===cid);if(!c)return;
   try{await txUpdate(t.id,{c:c.id,cn:c.name,b:c.b});toast('Категория изменена: '+c.name)}catch(e){console.error(e);toast('Не удалось изменить')}
 }
 async function delEntry(){
@@ -1277,28 +1335,31 @@ async function delEntry(){
 }
 
 /* ---------- настройки ---------- */
+function draftFromMonth(mon){
+  const c=cfgMonth(mon);
+  S.draft={mon:mon,income:c.income,cats:clone(c.cats),shops:S.cfg.shops.slice(),dirty:false,own:!!S.months[mon]};
+}
 function renderSettings(){
-  const d=S.draft;let h=`<div class="card"><h2>Доход в месяц</h2><div class="set-row"><label for="setIncome">Чистый доход</label><input id="setIncome" class="field" type="number" inputmode="numeric" min="0" value="${d.income}"></div></div>`;
-  h+='<div class="card"><h2>Суммы по категориям в месяц</h2>';
+  const d=S.draft,y=+d.mon.slice(0,4),m=+d.mon.slice(5,7);
+  let h=`<div class="card"><div class="mnav"><button class="ico sm" data-act="setMon" data-v="-1" aria-label="Предыдущий месяц">‹</button><div class="mtitle">${MONTHS[m-1]} ${y}</div><button class="ico sm" data-act="setMon" data-v="1" aria-label="Следующий месяц">›</button></div>
+  <p class="muted" style="font-size:12.5px;margin:10px 0 0">${d.own?'Этот месяц настроен отдельно.':'Пока повторяет прошлые месяцы.'} Следующие месяцы повторяют его, пока ты не настроишь их отдельно.</p>
+  <button class="chip ghost" data-act="setCopyPrev" style="margin-top:10px">Взять из прошлого месяца</button></div>`;
+  h+=`<div class="card"><h2>Доход в месяц</h2><div class="set-row"><label for="setIncome">Чистый доход</label><input id="setIncome" class="field" type="number" inputmode="numeric" min="0" value="${d.income}"></div></div>`;
+  h+='<div class="card"><h2>Категории и суммы</h2>';
   for(const bid of ['base','ukrep','save']){
     h+=`<div class="set-grp"><h3>${BUCKET[bid].name}</h3>`;
-    for(const c of d.cats.filter(c=>c.b===bid))h+=`<div class="set-row"><label for="sp_${c.id}">${esc(c.name)}</label><input id="sp_${c.id}" data-cat="${c.id}" class="field set-plan" type="number" inputmode="numeric" min="0" value="${c.plan}"></div>`;
-    h+='</div>';
+    for(const c of d.cats.filter(c=>c.b===bid))h+=`<div class="set-row"><input class="field set-name" data-cid="${c.id}" value="${esc(c.name)}" maxlength="30" aria-label="Название категории"><input class="field set-plan" data-cid="${c.id}" type="number" inputmode="numeric" min="0" value="${c.plan}" aria-label="Сумма в месяц"><button class="xbtn" data-act="catDel" data-v="${c.id}" aria-label="Убрать категорию ${esc(c.name)}">✕</button></div>`;
+    h+=`<button class="chip ghost" data-act="catAdd" data-v="${bid}">+ категория</button></div>`;
   }
-  h+='<p class="muted" style="font-size:12.5px;margin:6px 0 0">«Другое» без суммы: траты из него вычитаются из общей кучки.</p>';
+  h+='<p class="muted" style="font-size:12.5px;margin:10px 0 0">«Другое» без суммы: траты из него вычитаются из общей кучки.</p>';
   h+='<div id="setTotals" class="totals" style="margin-top:12px"></div></div>';
   h+='<div class="card"><h2>Площадки покупок</h2><div id="setShops" class="chips first"></div><div class="inline-add"><input id="setShopInput" class="field" type="text" placeholder="Новая площадка" maxlength="30" aria-label="Новая площадка"><button class="btn-sm" data-act="setShopAdd">Добавить</button></div></div>';
-  h+='<p class="muted" style="font-size:12.5px">Новые суммы действуют на все месяцы. Уже записанные траты не меняются.</p>';
-  h+='<button class="btn" data-act="saveSettings">Сохранить</button>';
-  h+='<div class="card" style="margin-top:14px"><h2>Импорт от Claude</h2><p class="muted" style="margin:0 0 10px;font-size:12.5px">Если Claude прислал блок текста с тратами, вставь его сюда. Дубли пропущу.</p><textarea id="importText" class="field" rows="4" placeholder="[ {...}, {...} ]" style="font-size:14px"></textarea><button class="btn ghost" data-act="doImport">Добавить траты</button></div>';
+  h+=`<button class="btn" data-act="saveSettings">Сохранить на ${MONTHS[m-1].toLowerCase()}</button>`;
+  h+='<div class="card" style="margin-top:14px"><h2>Импорт от Claude</h2><p class="muted" style="margin:0 0 10px;font-size:12.5px">Если Claude прислал блок текста с тратами, вставь его сюда. Дубли пропущу.</p><textarea id="importText" class="field" rows="4" placeholder="[ {...}, {...} ]" style="font-size:16px"></textarea><button class="btn ghost" data-act="doImport">Добавить траты</button></div>';
   h+='<button class="btn ghost" data-act="logout">Выйти из дневника</button>';
   h+='<p class="muted" style="text-align:center;font-size:12px;margin:14px 0 0">Версия приложения: '+APP_VERSION+'</p>';
   $('#settingsBody').innerHTML=h;
   renderSettingsShops();updateTotals();
-  $('#setIncome').addEventListener('input',e=>{S.draft.income=Math.max(0,+e.target.value||0);updateTotals()});
-  document.querySelectorAll('.set-plan').forEach(inp=>inp.addEventListener('input',e=>{
-    const c=S.draft.cats.find(x=>x.id===e.target.dataset.cat);if(c){c.plan=Math.max(0,+e.target.value||0);updateTotals()}
-  }));
 }
 function renderSettingsShops(){
   $('#setShops').innerHTML=S.draft.shops.map(s=>`<button class="chip" data-act="shopDel" data-v="${esc(s)}" aria-label="Убрать ${esc(s)}">${esc(s)}<small>✕</small></button>`).join('')||'<span class="empty">Список пуст.</span>';
@@ -1310,7 +1371,16 @@ function updateTotals(){
   $('#setTotals').innerHTML=`База: ${rub(sum('base'))} (${pc(sum('base'))}%)<br>Укрепление: ${rub(sum('ukrep'))} (${pc(sum('ukrep'))}%)<br>Накопления: ${rub(sum('save'))} (${pc(sum('save'))}%)<br>`+(free<0?`<span class="neg">Не хватает дохода: ${rub(-free)}</span>`:`Не распределено: ${rub(free)}`);
 }
 async function saveSettings(){
-  try{await cfgSave(S.draft);closeSheet('settings');toast('Настройки сохранены')}catch(e){console.error(e);toast('Не удалось сохранить настройки')}
+  const d=S.draft;
+  if(d.cats.some(c=>!String(c.name).trim())){toast('У каждой категории должно быть название');return}
+  d.cats.forEach(c=>{c.name=String(c.name).trim()});
+  try{
+    S.cfg.shops=d.shops.slice();
+    await saveMainCfg();
+    await saveMonthCfg(d.mon,{income:d.income,cats:d.cats});
+    d.dirty=false;closeSheet('settings');
+    toast('Сохранено на '+MONTHS[+d.mon.slice(5,7)-1].toLowerCase());
+  }catch(e){console.error(e);toast('Не удалось сохранить настройки')}
 }
 
 /* ---------- аналитика ---------- */
@@ -1320,7 +1390,7 @@ function renderStats(){
   const inMonth=S.tx.filter(t=>monthOf(t.d)===mon);
   const f=inMonth.filter(t=>{const b=bucketOfTx(t);if(S.sb==='all')return b!=='save';if(b!==S.sb)return false;return !S.sc||t.c===S.sc});
   const total=f.reduce((s,t)=>s+t.a,0);
-  const scope=S.cfg.cats.filter(c=>S.sb==='all'?(c.b==='base'||c.b==='ukrep'):c.b===S.sb).filter(c=>!S.sc||c.id===S.sc);
+  const scope=monthCats(mon).filter(c=>S.sb==='all'?(c.b==='base'||c.b==='ukrep'):c.b===S.sb).filter(c=>!S.sc||c.id===S.sc);
   let plan=0,spent=0;scope.forEach(c=>{const s=catState(c,mon);plan+=s.avail;spent+=s.spent});
   const tf=mon<curMon?1:mon>curMon?0:today.getDate()/dim;
   let h='';
@@ -1328,7 +1398,7 @@ function renderStats(){
   h+=`<div class="card"><div class="mnav"><button class="ico sm" data-act="sMonth" data-v="-1" aria-label="Предыдущий месяц">‹</button><div class="mtitle">${MONTHS[m-1]} ${y}</div><button class="ico sm" data-act="sMonth" data-v="1" ${mon>=curMon?'disabled':''} aria-label="Следующий месяц">›</button></div>`;
   h+=`<div class="chips">${[['all','Все траты'],['base','База'],['ukrep','Укрепление'],['save','Накопления'],['noo','НОО']].map(p=>`<button class="chip" data-act="sBucket" data-v="${p[0]}" aria-pressed="${S.sb===p[0]}">${p[1]}</button>`).join('')}</div>`;
   if(S.sb!=='all'){
-    h+=`<div class="chips">${S.cfg.cats.filter(c=>c.b===S.sb).map(c=>`<button class="chip" data-act="sCat" data-v="${c.id}" aria-pressed="${S.sc===c.id}">${esc(c.name)}</button>`).join('')}</div>`;
+    h+=`<div class="chips">${monthCats(mon).filter(c=>c.b===S.sb).map(c=>`<button class="chip" data-act="sCat" data-v="${c.id}" aria-pressed="${S.sc===c.id}">${esc(c.name)}</button>`).join('')}</div>`;
   }
   h+='</div>';
 
