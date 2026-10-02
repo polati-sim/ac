@@ -173,7 +173,7 @@ h1{font:300 28px/1.05 'Unbounded',sans-serif;letter-spacing:-.02em}
 .field+.field{margin-top:8px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;align-items:stretch}
-.pair .card{margin:0;padding:11px}
+.pair .card{margin:0;padding:11px;display:flex;flex-direction:column}
 .pair .chip{padding:6px 10px;font-size:12.5px}
 .pair .field{padding:10px 11px;font-size:16px}
 .pair .lbl{margin:0 0 7px}
@@ -392,8 +392,7 @@ button:focus-visible,summary:focus-visible,input:focus-visible,.range:focus-visi
       <div class="lbl">Что купила</div>
       <input id="tag" class="field" type="text" placeholder="напр. творожок" autocomplete="off" maxlength="40" aria-label="Тег покупки">
       <div id="tagChips" class="chips"></div>
-      <div id="cMore" style="margin-top:8px">
-        <input id="pack" class="field" type="text" placeholder="упаковка: 180 г" maxlength="20" aria-label="Размер упаковки">
+      <div id="cMore" style="margin-top:auto;padding-top:8px">
         <input id="note" class="field" type="text" placeholder="заметка" maxlength="120" aria-label="Заметка">
       </div>
     </section>
@@ -593,7 +592,7 @@ const bucketOfTx=t=>{const c=catById(t.c,monthOf(t.d));return c?c.b:(t.b||'base'
 const catNameOfTx=t=>{const c=catById(t.c,monthOf(t.d));return c?c.name:(t.cn||t.c)};
 
 /* ---------- база: Supabase, вход по почте и паролю ---------- */
-const APP_VERSION='10 · 02.10.2026';
+const APP_VERSION='11 · 02.10.2026';
 const SB_URL='https://yshpuzygxjzoafjjzfox.supabase.co';
 const SB_KEY='sb_publishable_WUWAzb6hHO1G_DY9m34JtA_PBviHBY4';
 const Store={mode:'wait',ready:null,resolve:null};
@@ -985,19 +984,17 @@ function renderCatDetail(){
   el.innerHTML=`<div class="d-top"><b>${esc(c.name)}</b><span class="${neg?'neg':''}">${main}</span></div>${meter}${subs.length?`<span class="d-sub">${subs.join(' · ')}</span>`:''}`;
 }
 function renderTagChips(){
-  const q=$('#tag').value.trim().toLowerCase(),cat=S.form.cat;
-  let list=tagStats().filter(s=>!q||s.key.includes(q));
-  list.sort((a,b)=>((b.cats.has(cat)?1:0)-(a.cats.has(cat)?1:0))||b.nMonth-a.nMonth||b.nAll-a.nAll||b.lastTs-a.lastTs);
-  list=list.slice(0,4);
-  const box=$('#tagChips');
-  if(!list.length){box.innerHTML=q?'<span class="empty" style="font-size:12px">Новый тег запомню.</span>':'<span class="empty" style="font-size:12px">Здесь появятся твои теги.</span>';return}
-  box.innerHTML=list.map(s=>`<button class="chip" data-act="pickTag" data-v="${esc(s.name)}" aria-pressed="${s.key===q}">${esc(s.name)}<small>${s.nMonth?'×'+s.nMonth:'ранее ×'+s.nAll}</small></button>`).join('');
+  const q=$('#tag').value.trim().toLowerCase(),cat=S.form.cat,box=$('#tagChips');
+  if(!q){box.innerHTML='';return}
+  let list=tagStats().filter(s=>s.key.includes(q)&&s.key!==q);
+  list.sort((a,b)=>((b.key.startsWith(q)?1:0)-(a.key.startsWith(q)?1:0))||((b.cats.has(cat)?1:0)-(a.cats.has(cat)?1:0))||b.nMonth-a.nMonth||b.nAll-a.nAll||b.lastTs-a.lastTs);
+  box.innerHTML=list.slice(0,5).map(s=>`<button class="chip" data-act="pickTag" data-v="${esc(s.name)}">${esc(s.name)}</button>`).join('');
 }
 function renderTagInfo(){
   const el=$('#tagInfo'),key=$('#tag').value.trim().toLowerCase();
   if(!key){el.style.display='none';return}
   const h=tagHistory(key);el.style.display='block';
-  if(!h.length){el.innerHTML='Новый тег. Запомню его, когда запишешь покупку.';return}
+  if(!h.length){el.style.display='none';return}
   const mon=monthOf(S.form.date),nm=h.filter(t=>monthOf(t.d)===mon).length;
   const avg=h.reduce((s,t)=>s+t.a,0)/h.length,last=h[0],cmp=compareRows(h);
   let s=`<b>${esc(h[0].g)}</b>: ${nm} ${nm===1?'раз':'раза'} в этом месяце, всего ${h.length}. Средняя цена ${rub(avg)}.`;
@@ -1100,13 +1097,13 @@ async function save(){
   const typed=$('#tag').value.trim();
   const known=tagStats().find(s=>s.key===typed.toLowerCase());
   const t={id:uid(),d:f.date,a:Math.round(f.amt),c:c.id,cn:c.name,b:c.b,i:f.imp,
-    g:known?known.name:typed,s:f.shop||'',w:f.why.slice(),p:$('#pack').value.trim(),n:$('#note').value.trim(),ts:Date.now()};
+    g:known?known.name:typed,s:f.shop||'',w:f.why.slice(),p:'',n:$('#note').value.trim(),ts:Date.now()};
   try{
     await txSet(t);
     S.lastId=t.id;
     toast('Записано: '+rub(t.a)+' · '+c.name,true);
     Object.assign(f,{amt:0,cat:null,imp:3,tag:'',shop:'',why:[]});
-    $('#tag').value='';$('#pack').value='';$('#note').value='';$('#cMore').open=false;
+    $('#tag').value='';$('#note').value='';
     syncSlider();syncImp();$('#amt').innerHTML='0<span>₽</span>';
     renderAll();
     return true;
@@ -1148,7 +1145,6 @@ document.addEventListener('click',e=>{
     case 'usePrice':
       setAmt(+v,true);
       if(t.dataset.shop){f.shop=t.dataset.shop;renderShops()}
-      if(t.dataset.pack){$('#pack').value=t.dataset.pack;$('#cMore').open=true}
       break;
     case 'pickShop':f.shop=f.shop===v?'':v;renderShops();break;
     case 'shopToggle':{const r=$('#shopAddRow');r.hidden=!r.hidden;if(!r.hidden)$('#shopInput').focus();break}
