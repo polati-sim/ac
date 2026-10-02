@@ -103,6 +103,7 @@ h1{font:300 28px/1.05 'Unbounded',sans-serif;letter-spacing:-.02em}
 #days::-webkit-scrollbar{display:none}
 #days .day{flex:0 0 50px}
 .day.pick{flex:0 0 46px}
+.day.fut{border-style:dashed}
 .day.has{border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.17)}
 .day{min-width:0;padding:5px 0 4px;border-radius:10px;background:rgba(255,255,255,.1);
   border:1px solid rgba(255,255,255,.2);text-align:center;cursor:pointer}
@@ -592,7 +593,7 @@ const bucketOfTx=t=>{const c=catById(t.c,monthOf(t.d));return c?c.b:(t.b||'base'
 const catNameOfTx=t=>{const c=catById(t.c,monthOf(t.d));return c?c.name:(t.cn||t.c)};
 
 /* ---------- база: Supabase, вход по почте и паролю ---------- */
-const APP_VERSION='9 · 02.10.2026';
+const APP_VERSION='10 · 02.10.2026';
 const SB_URL='https://yshpuzygxjzoafjjzfox.supabase.co';
 const SB_KEY='sb_publishable_WUWAzb6hHO1G_DY9m34JtA_PBviHBY4';
 const Store={mode:'wait',ready:null,resolve:null};
@@ -805,6 +806,7 @@ async function importBlock(text){
 }
 
 /* ---------- расчёты ---------- */
+function maxMon(){let m=iso(today).slice(0,7);for(const t of S.tx){const x=monthOf(t.d);if(x>m)m=x}return m}
 function reindex(){
   const m=new Map();
   for(const t of S.tx){const k=monthOf(t.d)+'|'+t.c;m.set(k,(m.get(k)||0)+t.a)}
@@ -930,16 +932,17 @@ function renderDays(){
   const box=$('#days'),td=iso(today),sel=parseIso(S.form.date);
   const def=new Date(today);def.setDate(today.getDate()-60);
   const startD=sel<def?new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()-10):def;
-  const startIso=iso(startD),has=new Set(S.tx.map(t=>t.d));
+  const endD=sel>today?new Date(sel.getFullYear(),sel.getMonth(),sel.getDate()+2):new Date(today);
+  const startIso=iso(startD),endIso=iso(endD),has=new Set(S.tx.map(t=>t.d));
   let fresh=false;
-  if(box.dataset.start!==startIso||!box.children.length){
+  if(box.dataset.start!==startIso||box.dataset.end!==endIso||!box.children.length){
     const list=[];
-    for(const d=new Date(startD);iso(d)<=td;d.setDate(d.getDate()+1))list.push(iso(d));
+    for(const d=new Date(startD);iso(d)<=endIso;d.setDate(d.getDate()+1))list.push(iso(d));
     box.innerHTML=list.map(k=>{
       const d=parseIso(k);
-      return `<button class="day" data-act="pickDay" data-v="${k}" aria-label="${d.toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}"><small>${k===td?'сегодня':WD[d.getDay()]}</small><b>${d.getDate()}</b></button>`;
+      return `<button class="day${k>td?' fut':''}" data-act="pickDay" data-v="${k}" aria-label="${d.toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}"><small>${k===td?'сегодня':WD[d.getDay()]}</small><b>${d.getDate()}</b></button>`;
     }).join('');
-    box.dataset.start=startIso;fresh=true;
+    box.dataset.start=startIso;box.dataset.end=endIso;fresh=true;
   }
   box.querySelectorAll('.day').forEach(b=>{
     b.setAttribute('aria-pressed',b.dataset.v===S.form.date);
@@ -947,7 +950,7 @@ function renderDays(){
   });
   if(fresh||S.scrollSel){centerSel();S.scrollSel=false}
   const far=new Date(today);far.setDate(today.getDate()-5);
-  $('#daysBack').innerHTML=sel<far?'<div style="padding:0 8px 8px"><button class="chip ghost" data-act="toToday">Вернуться к сегодня</button></div>':'';
+  $('#daysBack').innerHTML=(sel<far||iso(sel)>td)?'<div style="padding:0 8px 8px"><button class="chip ghost" data-act="toToday">Вернуться к сегодня</button></div>':'';
 }
 function renderTabs(){
   $('#tabs').innerHTML=['base','ukrep','save','noo'].map(id=>`<button class="tab" role="tab" aria-selected="${S.form.tab===id}" data-act="tab" data-v="${id}" style="--tc:var(${BUCKET[id].color})"><i></i>${BUCKET[id].name}</button>`).join('');
@@ -1179,7 +1182,7 @@ document.addEventListener('click',e=>{
     case 'closeEntry':closeSheet('entry');break;
     case 'reassign':reassign(v);break;
     case 'delAsk':if(!S.delAsk){S.delAsk=true;renderEntry()}else delEntry();break;
-    case 'sMonth':{const d=new Date(+S.sm.slice(0,4),+S.sm.slice(5,7)-1+(+v),1);const m=d.getFullYear()+'-'+pad(d.getMonth()+1);if(m<=iso(today).slice(0,7)){S.sm=m;S.sd=''}renderStats();break}
+    case 'sMonth':{const d=new Date(+S.sm.slice(0,4),+S.sm.slice(5,7)-1+(+v),1);const m=d.getFullYear()+'-'+pad(d.getMonth()+1);if(m<=maxMon()){S.sm=m;S.sd=''}renderStats();break}
     case 'sBucket':S.sb=v;S.sc='';S.sd='';renderStats();break;
     case 'sCat':S.sc=S.sc===v?'':v;S.sd='';renderStats();break;
     case 'sDay':S.sd=S.sd===v?'':v;renderStats();break;
@@ -1224,7 +1227,6 @@ $('#amtRange').addEventListener('input',e=>{
 });
 $('#impRange').addEventListener('input',e=>{S.form.imp=+e.target.value;syncImp()});
 $('#tag').addEventListener('input',e=>{S.form.tag=e.target.value;renderTagChips();renderTagInfo();renderShops()});
-$('#datePick').max=iso(today);
 $('#datePick').addEventListener('change',e=>{if(e.target.value){S.form.date=e.target.value;S.scrollSel=true;renderAll()}e.target.value=''});
 $('#authPass').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();authGo()}});
 $('#authEmail').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('#authPass').focus()}});
@@ -1395,7 +1397,7 @@ function renderStats(){
   const tf=mon<curMon?1:mon>curMon?0:today.getDate()/dim;
   let h='';
 
-  h+=`<div class="card"><div class="mnav"><button class="ico sm" data-act="sMonth" data-v="-1" aria-label="Предыдущий месяц">‹</button><div class="mtitle">${MONTHS[m-1]} ${y}</div><button class="ico sm" data-act="sMonth" data-v="1" ${mon>=curMon?'disabled':''} aria-label="Следующий месяц">›</button></div>`;
+  h+=`<div class="card"><div class="mnav"><button class="ico sm" data-act="sMonth" data-v="-1" aria-label="Предыдущий месяц">‹</button><div class="mtitle">${MONTHS[m-1]} ${y}</div><button class="ico sm" data-act="sMonth" data-v="1" ${mon>=maxMon()?'disabled':''} aria-label="Следующий месяц">›</button></div>`;
   h+=`<div class="chips">${[['all','Все траты'],['base','База'],['ukrep','Укрепление'],['save','Накопления'],['noo','НОО']].map(p=>`<button class="chip" data-act="sBucket" data-v="${p[0]}" aria-pressed="${S.sb===p[0]}">${p[1]}</button>`).join('')}</div>`;
   if(S.sb!=='all'){
     h+=`<div class="chips">${monthCats(mon).filter(c=>c.b===S.sb).map(c=>`<button class="chip" data-act="sCat" data-v="${c.id}" aria-pressed="${S.sc===c.id}">${esc(c.name)}</button>`).join('')}</div>`;
